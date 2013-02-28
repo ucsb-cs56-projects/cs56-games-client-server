@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="0.2 1.0" codebase="http://www.cs.ucsb.edu/~jcolicchio/cs56/W12/issues/0000535/jws" href="JavaServer.jnlp">
+ <information>
+   <title>UCSB CS56 W12 Joseph Colicchio, Tower Defense GUI</title>
+   <vendor>UCSB CS56</vendor>
+   <homepage href="." />
+   <description>Tower Defense GUI</description>
+  <icon href="cs56.png" />
+  <offline-allowed />
+ </information>
+ <resources>
+  <j2se version="1.3+" />
+  <jar href="JavaServer.jar" />
+ </resources>
+ <application-desc main-class="edu.ucsb.cs56.W12.jcolicchio.issue535.JavaServer"/>
+ <security>
+   <all-permissions />
+ </security>
+</jnlp>
