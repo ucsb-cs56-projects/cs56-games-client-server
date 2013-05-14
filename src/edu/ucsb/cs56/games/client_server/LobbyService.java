@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;//Lobbyservice is a service that newly connecting players join by default
+package edu.ucsb.cs56.games.client_server;//Lobbyservice is a service that newly connecting players join by default
 //it
 
 import java.util.ArrayList;

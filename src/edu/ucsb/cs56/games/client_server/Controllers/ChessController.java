@@ -1,4 +1,8 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers;
+
+import edu.ucsb.cs56.games.client_server.ClientConnect;
+import edu.ucsb.cs56.games.client_server.TwoPlayerGameService;
+import edu.ucsb.cs56.games.client_server.Models.ChessModel;
 
 /**
  * Chess service is run by the server and essentially connects the clients to the server's copy of the chess game
@@ -9,8 +13,8 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessService extends TwoPlayerGameService {
-    public ChessGame gameData;
+public class ChessController extends TwoPlayerGameService {
+    public ChessModel gameData;
 
     public ClientConnect player1;
     public ClientConnect player2;
@@ -21,9 +25,9 @@ public class ChessService extends TwoPlayerGameService {
      * start the service with id number ID
      * @param ID id of the service
      */
-    public ChessService(int ID) {
+    public ChessController(int ID) {
         super(ID);
-        gameData = new ChessGame();
+        gameData = new ChessModel();
         type = 3;
         name = "Chess";
     }
@@ -49,7 +53,7 @@ public class ChessService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init();
         }
 
@@ -111,13 +115,13 @@ public class ChessService extends TwoPlayerGameService {
 
         if(!gameStarted || gameData.winner > 0)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
             return;
         if(string.indexOf("MOVE;") == 0) {
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X1 = Integer.parseInt(data[0]);
             int Y1 = Integer.parseInt(data[1]);
@@ -163,12 +167,12 @@ public class ChessService extends TwoPlayerGameService {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

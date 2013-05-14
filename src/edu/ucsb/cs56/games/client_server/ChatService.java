@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 //ChatService is basically a chat channel, it maintains a list of clients connected specifically to itself, and can send
 //data to all clients connected to it
 // a /msg command is handled
@@ -27,7 +27,7 @@ public class ChatService extends Service {
         if(!clients.contains(client))
             clients.add(client);
         System.out.println(clients+", "+client);
-        broadcastData("SMSG;" + client.client.name + " joined");
+        broadcastData("SMSG;" + client.client.getName() + " joined");
     }
 
     /** removes a client from the chat
@@ -35,7 +35,7 @@ public class ChatService extends Service {
      */
     public void removeClient(ClientConnect client) {
         clients.remove(client);
-        broadcastData("SMSG;" + client.client.name + " left");
+        broadcastData("SMSG;" + client.client.getName() + " left");
     }
 
     /** broadcasts data to all clients connected to THIS SERVICE specifically
@@ -68,7 +68,7 @@ public class ChatService extends Service {
                 //if command is //bbq, go ahead and OP user
                 //edu.ucsb.cs56.W12.jcolicchio.issue535.JavaServer.broadcastMessage("OP;"+client.name);
                 client.client.isOp = true;
-                JavaServer.broadcastMessage("SMSG;"+client.client.name+" is OP! Run for your lives!");
+                JavaServer.broadcastMessage("SMSG;"+client.client.getName()+" is OP! Run for your lives!");
             } else if(message.indexOf("/kick ") == 0 || message.indexOf("/k ") == 0) {
                 if(!client.client.isOp) {
                     client.fromServer("You cannot kick someone unless you are an OP");
@@ -116,8 +116,8 @@ public class ChatService extends Service {
                     //send message back to user
                     client.sendMessage("RMSG[" + id + "]" + message.substring(5 + data[0].length() + 1));
 
-                    System.out.println("private message from "+JavaServer.clients.get(id).client.name+" to "+data[0]+": "+msg);
-                    JavaServer.clients.get(id).sendMessage("PMSG["+client.client.id+"]"+msg);
+                    System.out.println("private message from "+JavaServer.clients.get(id).client.getName()+" to "+data[0]+": "+msg);
+                    JavaServer.clients.get(id).sendMessage("PMSG["+client.client.getId()+"]"+msg);
                 } else {
                     client.sendMessage("SMSG;" + data[0] + " not on server!");
                 }
@@ -151,7 +151,7 @@ public class ChatService extends Service {
                 Service service = JavaServer.services.get(JavaServer.clients.get(id).client.location);
                 switchServices(client, service);
             } else
-                broadcastData("MSG["+client.client.id+"]"+message);
+                broadcastData("MSG["+client.client.getId()+"]"+message);
         }
     }
 
@@ -165,7 +165,7 @@ public class ChatService extends Service {
         if(client.client.location == service.id)
             return;
         client.currentService.removeClient(client);
-        JavaServer.broadcastMessage("MOVED[" + client.client.id + "]" + service.id);
+        JavaServer.broadcastMessage("MOVED[" + client.client.getId() + "]" + service.id);
         service.addClient(client);
         client.currentService = service;
         client.client.location = service.id;

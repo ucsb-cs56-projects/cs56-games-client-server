@@ -5,21 +5,21 @@
        name: P.Conrad for CS56, W11 -->
 
   <property environment="env"/> <!-- load the environment variables --> 
-  <property name="author" value="jcolicchio" />
+  <property name="author" value="mastergberry" />
   <property name="webRoot" value="${env.HOME}/public_html/" />
   <property name="webBaseUrl" value="http://www.cs.ucsb.edu/~${env.USER}/" />
   <property name="course" value="cs56" />
-  <property name="quarter" value="W12" />
-  <property name="issueNum" value="0000535" />
+  <property name="topic" value="games" />
+  <property name="description" value="client_server" />
   <property name="clientName" value="JavaClient" />
   <property name="serverName" value="JavaServer" />
   <property name="projectName" value="${clientName}" />
-  <property name="clientClass" value="edu.ucsb.${course}.${quarter}.${author}.issue535.${clientName}" />
-  <property name="serverClass" value="edu.ucsb.${course}.${quarter}.${author}.issue535.${serverName}" />
+  <property name="clientClass" value="edu.ucsb.${course}.${topic}.${description}.${clientName}" />
+  <property name="serverClass" value="edu.ucsb.${course}.${topic}.${description}.${serverName}" />
 
 
-  <property name="projectPath" value="${course}/${quarter}/issues/${issueNum}" />
-  <property name="package" value="edu/ucsb/${course}/${quarter}/${author}/issue${issueNum}" />
+  <property name="projectPath" value="${course}/${topic}/${description}" />
+  <property name="package" value="edu/ucsb/${course}/${topic}/${description}" />
   <property name="javadocDest" value="${webRoot}/${projectPath}/javadoc" /> 
   <property name="javadocURL" value="${webBaseUrl}/${projectPath}/javadoc" /> 
   <property name="jwsDest" value="${webRoot}/${projectPath}/jws" /> 
@@ -27,16 +27,15 @@
 
   <target name="compile" >
     <mkdir dir="build" />
-    <!--<mkdir dir="build/${package}/graphics" />
+    <mkdir dir="build/${package}/graphics" />
 	<copy todir="build/${package}/graphics">
-	<fileset dir="graphics" includes="**" />
-	</copy> -->
+		<fileset dir="graphics" includes="**" />
+	</copy>
     <javac srcdir="src" destdir="build" debug="true" debuglevel="lines,source">
-
-      <classpath>
-	<pathelement location="build"/>
-	<pathelement location="/cs/faculty/pconrad/public_html/cs56/lib/junit-4.8.2.jar"/>
-      </classpath>
+	    <classpath>
+			<pathelement location="build"/>
+			<pathelement location="/cs/faculty/pconrad/public_html/cs56/lib/junit-4.8.2.jar"/>
+	    </classpath>
     </javac>
 
   </target>
@@ -73,6 +72,7 @@
   
   <target name="clean" >
     <delete dir="build" quiet="true" />
+    <delete dir="bin" quiet="true" /> <!-- Eclipse Debug Folder -->
     <delete dir="javadoc" quiet="true" />
     <delete dir="dist" quiet="true" />
     <delete dir="download" quiet="true" />

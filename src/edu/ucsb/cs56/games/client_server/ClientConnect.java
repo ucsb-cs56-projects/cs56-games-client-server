@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class ClientConnect implements Runnable {
         }
 
         //tell client what its id is
-        sendMessage("ID;"+client.id);
+        sendMessage("ID;"+client.getId());
         currentService = JavaServer.lobby;
         currentService.addClient(this);
         //edu.ucsb.cs56.W12.jcolicchio.issue535.JavaServer.broadcastMessage("CON;"+client.id);
@@ -87,7 +87,7 @@ public class ClientConnect implements Runnable {
         } catch(Exception ex) {
             System.out.println("closed? "+closed);
             ex.printStackTrace();
-            JavaServer.broadcastMessage("DCON["+client.id+"]Client crashed!");
+            JavaServer.broadcastMessage("DCON["+client.getId()+"]Client crashed!");
         }
 
         try{
@@ -103,9 +103,9 @@ public class ClientConnect implements Runnable {
         currentService.removeClient(this);
         System.out.println(closed+" well at least this got called...");
         synchronized (JavaServer.clients) {
-            JavaServer.clients.set(client.id, null);
-            if(client.id == JavaServer.clients.size()-1){
-                for(int i=client.id;i>=0;i--) {
+            JavaServer.clients.set(client.getId(), null);
+            if(client.getId() == JavaServer.clients.size()-1){
+                for(int i=client.getId();i>=0;i--) {
                     if(JavaServer.clients.get(i) == null) {
                         JavaServer.clients.remove(i);
                     } else {
@@ -128,7 +128,7 @@ public class ClientConnect implements Runnable {
         //do something with the message from the client
         if(string.indexOf("CON;") == 0) {
             //if incoming is CON;, alert everyone that cilent.id has connected
-            JavaServer.broadcastMessage("CON;"+client.id);
+            JavaServer.broadcastMessage("CON;"+client.getId());
         } else if(string.indexOf("DCON;") == 0) {
             //if incoming is DCON;, alert everyone that client.id has disconnected
             disconnect(string.substring(5));
@@ -160,7 +160,7 @@ public class ClientConnect implements Runnable {
                 if(client == null)
                     r += ",";
                 else
-                    r += client.client.name+","+client.client.location;
+                    r += client.client.getName()+","+client.client.location;
                 if(i < JavaServer.clients.size()-1)
                     r += ";";
             }
@@ -205,9 +205,9 @@ public class ClientConnect implements Runnable {
 
         ClientConnect victim = JavaServer.clients.get(id);
         if(reason == null || reason.equals(""))
-            victim.disconnect("Kicked by "+client.name);
+            victim.disconnect("Kicked by "+client.getName());
         else
-            victim.disconnect("Kicked by "+client.name+". Reason: "+reason);
+            victim.disconnect("Kicked by "+client.getName()+". Reason: "+reason);
     }
 
     /**
@@ -259,7 +259,7 @@ public class ClientConnect implements Runnable {
      */
     public void disconnect(String message) {
         closed = true;
-        String msg = "DCON["+client.id+"]";
+        String msg = "DCON["+client.getId()+"]";
         if(message != null)
             msg += message;
         JavaServer.broadcastMessage(msg);
@@ -274,7 +274,7 @@ public class ClientConnect implements Runnable {
     public void sendMessage(String string) {
         if(writer == null)
             return;
-        System.out.println("outgoing to "+client.id+"... "+string);
+        System.out.println("outgoing to "+client.getId()+"... "+string);
         writer.println(string);
         writer.flush();
     }
@@ -299,10 +299,10 @@ public class ClientConnect implements Runnable {
         }
 
         //this doesn't belong here
-        if(!client.name.equals(""))
-            JavaServer.broadcastMessage("SMSG;"+client.name+" changed name to "+newName);
-        client.name = newName;
-        JavaServer.broadcastMessage("NAME["+client.id+"]"+client.name);
+        if(!client.getName().equals(""))
+            JavaServer.broadcastMessage("SMSG;"+client.getName()+" changed name to "+newName);
+        client.setName(newName);
+        JavaServer.broadcastMessage("NAME["+client.getId()+"]"+client.getName());
     }
 
     /** send a message as the server

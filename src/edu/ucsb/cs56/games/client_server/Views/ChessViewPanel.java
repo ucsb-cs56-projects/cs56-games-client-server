@@ -1,6 +1,12 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Views;
 
 import javax.swing.*;
+
+import edu.ucsb.cs56.games.client_server.GamePanel;
+import edu.ucsb.cs56.games.client_server.JavaClient;
+import edu.ucsb.cs56.games.client_server.Res;
+import edu.ucsb.cs56.games.client_server.Models.ChessModel;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,8 +23,8 @@ import java.util.ArrayList;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessPanel extends GamePanel {
-    ChessGame game;
+public class ChessViewPanel extends GamePanel {
+    ChessModel game;
     int player1, player2;
 //    ArrayList<Character> capt1, capt2;
     JPanel menuButtons;
@@ -62,7 +68,7 @@ public class ChessPanel extends GamePanel {
 
     //TODO: service panel should ask for information about service, i.e. state, players, etc
 
-    public ChessPanel() {
+    public ChessViewPanel() {
         pieces = Res.ChessPieces;
         setLayout(new BorderLayout());
         menuButtons = new JPanel();
@@ -82,7 +88,7 @@ public class ChessPanel extends GamePanel {
         menuButtons.add(flippedBox);
         menuButtons.add(new JLabel("Flip Board?"));
 
-        game = new ChessGame();
+        game = new ChessModel();
 
         ChessCanvas canvas = new ChessCanvas();
         canvas.addMouseListener(canvas);
@@ -145,20 +151,20 @@ public class ChessPanel extends GamePanel {
             String[] data = string.substring(8).split(",");
             player1 = Integer.parseInt(data[0]);
             player2 = Integer.parseInt(data[1]);
-            System.out.println(player1+", "+JavaClient.javaClient.clients.size());
-            if(player1 >= 0 && player1 < JavaClient.javaClient.clients.size()) {
-                game.player1 = JavaClient.javaClient.clients.get(player1);
+            System.out.println(player1+", "+JavaClient.javaClient.getClients().size());
+            if(player1 >= 0 && player1 < JavaClient.javaClient.getClients().size()) {
+                game.player1 = JavaClient.javaClient.getClients().get(player1);
             } else
                 game.player1 = null;
-            if(player2 >= 0 && player2 < JavaClient.javaClient.clients.size())
-                game.player2 = JavaClient.javaClient.clients.get(player2);
+            if(player2 >= 0 && player2 < JavaClient.javaClient.getClients().size())
+                game.player2 = JavaClient.javaClient.getClients().get(player2);
             else
                 game.player2 = null;
 
             //if the user is currently playing
-            if(player1 == JavaClient.javaClient.id || player2 == JavaClient.javaClient.id) {
+            if(player1 == JavaClient.javaClient.getId() || player2 == JavaClient.javaClient.getId()) {
                 isPlaying = true;
-                if(player1 == JavaClient.javaClient.id)
+                if(player1 == JavaClient.javaClient.getId())
                     playerID = 1;
                 else {
                     flippedBox.setSelected(true);
@@ -259,7 +265,7 @@ public class ChessPanel extends GamePanel {
 
             g.setColor(Color.white);
             g.fillRect(0,0,getWidth(),getHeight());
-            if(!JavaClient.javaClient.connected || JavaClient.javaClient.clients == null)
+            if(!JavaClient.javaClient.isConnected() || JavaClient.javaClient.getClients() == null)
                 return;
 
             g.setColor(new Color(0x333333));
@@ -318,20 +324,20 @@ public class ChessPanel extends GamePanel {
                 }
 
                 if(player1 > -1)
-                    game.player1 = JavaClient.javaClient.clients.get(player1);
+                    game.player1 = JavaClient.javaClient.getClients().get(player1);
                 if(player2 > -1)
-                    game.player2 = JavaClient.javaClient.clients.get(player2);
+                    game.player2 = JavaClient.javaClient.getClients().get(player2);
 
                 String readyState = "";
                 if(game.player1 != null) {
                     g.setColor(Color.red);
-                    g.drawString("Player 1: "+game.player1.name,offsetX,offsetY-23);
+                    g.drawString("Player 1: "+game.player1.getName(),offsetX,offsetY-23);
                     g.drawImage(pieces,offsetX-25,offsetY-40,offsetX-5,offsetY-20,21,0,42,21,null);
                 } else
                     readyState = "waiting for players";
                 if(game.player2 != null) {
                     g.setColor(Color.blue);
-                    g.drawString("Player 2: " + game.player2.name, offsetX, offsetY-3);
+                    g.drawString("Player 2: " + game.player2.getName(), offsetX, offsetY-3);
                     g.drawImage(pieces, offsetX - 25, offsetY - 20, offsetX - 5, offsetY, 21, 21, 42, 42, null);
                 } else
                     readyState = "waiting for players";
@@ -342,13 +348,13 @@ public class ChessPanel extends GamePanel {
                 if(game.winner == -1)
                         readyState = "Stalemate!";
                     else if(game.winner == 1)
-                        readyState = "Checkmate! "+game.player1.name+" wins!";
+                        readyState = "Checkmate! "+game.player1.getName()+" wins!";
                     else if(game.winner == 2)
-                        readyState = "Checkmate! "+game.player2.name+" wins!";
+                        readyState = "Checkmate! "+game.player2.getName()+" wins!";
                     else if(game.turn == 1)
-                        readyState = game.player1.name+"'s turn";
+                        readyState = game.player1.getName()+"'s turn";
                     else
-                        readyState = game.player2.name+"'s turn";
+                        readyState = game.player2.getName()+"'s turn";
                     if(game.turn == check)
                        readyState += ", check!";
                 }

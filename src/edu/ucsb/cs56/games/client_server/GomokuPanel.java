@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,18 +91,18 @@ public class GomokuPanel extends GamePanel {
             String[] data = string.substring(8).split(",");
             int pid1 = Integer.parseInt(data[0]);
             int pid2 = Integer.parseInt(data[1]);
-            System.out.println(pid1+", "+JavaClient.javaClient.clients.size());
-            if(pid1 >= 0 && pid1 < JavaClient.javaClient.clients.size()) {
-                game.player1 = JavaClient.javaClient.clients.get(Integer.parseInt(data[0]));
+            System.out.println(pid1+", "+JavaClient.javaClient.getClients().size());
+            if(pid1 >= 0 && pid1 < JavaClient.javaClient.getClients().size()) {
+                game.player1 = JavaClient.javaClient.getClients().get(Integer.parseInt(data[0]));
             } else
                 game.player1 = null;
-            if(pid2 >= 0 && pid2 < JavaClient.javaClient.clients.size())
-                game.player2 = JavaClient.javaClient.clients.get(Integer.parseInt(data[1]));
+            if(pid2 >= 0 && pid2 < JavaClient.javaClient.getClients().size())
+                game.player2 = JavaClient.javaClient.getClients().get(Integer.parseInt(data[1]));
             else
                 game.player2 = null;
 
             //if the user is currently playing
-            if(pid1 == JavaClient.javaClient.id || pid2 == JavaClient.javaClient.id) {
+            if(pid1 == JavaClient.javaClient.getId() || pid2 == JavaClient.javaClient.getId()) {
                 isPlaying = true;
                 //if the game has two players, and is ready to go
                 if(game.player1 != null && game.player2 != null) {
@@ -164,7 +164,7 @@ public class GomokuPanel extends GamePanel {
 
             g.setColor(Color.white);
             g.fillRect(0,0,getWidth(),getHeight());
-            if(!JavaClient.javaClient.connected || JavaClient.javaClient.clients == null)
+            if(!JavaClient.javaClient.isConnected() || JavaClient.javaClient.getClients() == null)
                 return;
 
             g.setColor(Color.orange);
@@ -198,14 +198,14 @@ public class GomokuPanel extends GamePanel {
                 String readyState = "";
                 if(game.player1 != null) {
                     g.setColor(Color.red);
-                    g.drawString("Player 1: "+game.player1.name,offsetX,15);
+                    g.drawString("Player 1: "+game.player1.getName(),offsetX,15);
                     g.setColor(Color.DARK_GRAY);
                     g.fillOval(offsetX-25,offsetY-40,20,20);
                 } else
                     readyState = "waiting for players";
                 if(game.player2 != null) {
                     g.setColor(Color.blue);
-                    g.drawString("Player 2: "+game.player2.name,offsetX,35);
+                    g.drawString("Player 2: "+game.player2.getName(),offsetX,35);
                     g.setColor(Color.LIGHT_GRAY);
                     g.fillOval(offsetX-25,offsetY-20,20,20);
                 } else
@@ -213,13 +213,13 @@ public class GomokuPanel extends GamePanel {
 
                 if(readyState.equals("")) {
                     if(game.winner == 1)
-                        readyState = game.player1.name+" wins!";
+                        readyState = game.player1.getName()+" wins!";
                     else if(game.winner == 2)
-                        readyState = game.player2.name+" wins!";
+                        readyState = game.player2.getName()+" wins!";
                     else if(game.turn == 1)
-                        readyState = game.player1.name+"'s turn";
+                        readyState = game.player1.getName()+"'s turn";
                     else
-                        readyState = game.player2.name+"'s turn";
+                        readyState = game.player2.getName()+"'s turn";
                 }
 
                 g.setColor(new Color(0x222222));

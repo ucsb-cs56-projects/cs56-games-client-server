@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 /**
  * GomokuService is a server-side service that allows clients to send moves to the server's copy of a gomoku game
@@ -64,7 +64,7 @@ public class GomokuService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init(gameData.cells);
         }
 
@@ -128,7 +128,7 @@ public class GomokuService extends TwoPlayerGameService {
 
         if(!gameStarted || gameData.winner > 0)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
@@ -137,7 +137,7 @@ public class GomokuService extends TwoPlayerGameService {
         //this is an optional setting, some games may use it, eventually implement rule checkboxes
         //TODO: disallow moves that result in forming two 3's, (unblocked?), or 2 4's, blocked or unblocked
         if(string.indexOf("MOVE;") == 0) {
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X = Integer.parseInt(data[0]);
             int Y = Integer.parseInt(data[1]);
@@ -166,12 +166,12 @@ public class GomokuService extends TwoPlayerGameService {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

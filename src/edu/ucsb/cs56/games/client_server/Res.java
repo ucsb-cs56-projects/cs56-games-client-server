@@ -1,8 +1,10 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
+
+import java.awt.Image;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
-import java.io.IOException;
-import java.awt.*;
 
 /**
  * stores resources for recycling
@@ -22,7 +24,8 @@ public class Res {
     public static void init(Class frame) {
         ChessPieces = null;
         try {
-            ChessPieces = ImageIO.read(frame.getResource("/graphics/pieces.png"));
+        	URL url = frame.getResource("graphics/pieces.png");
+            ChessPieces = ImageIO.read(url);
 
         } catch (IOException e) {
             System.out.println("oops");

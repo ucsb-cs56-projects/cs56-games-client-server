@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 /**
  * tictactoegame is a tic tac toe game object that stores data about a tic tac toe game, such as placement of Xs and Os,

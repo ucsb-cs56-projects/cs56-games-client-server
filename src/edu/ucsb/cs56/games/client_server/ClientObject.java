@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import java.util.ArrayList;
 
@@ -12,8 +12,8 @@ import java.util.ArrayList;
  */
 
 public class ClientObject{
-    int id;
-    String name;
+    private int id;
+    private String name;
     int location;
 
     boolean isOp;
@@ -23,14 +23,14 @@ public class ClientObject{
 
     public ClientObject(int n) {
         //new client object made, stores data about client
-        id = n;
-        name = "User"+n;
+        setId(n);
+        setName("User"+n);
         location = 0;
     }
     
     public ClientObject(int n, String NAME, int LOCATION) {
-        id = n;
-        name = NAME;
+        setId(n);
+        setName(NAME);
         location = LOCATION;
     }
 
@@ -49,6 +49,22 @@ public class ClientObject{
             init();
         }
 
-        return colors.get(id%colors.size());
+        return colors.get(getId()%colors.size());
     }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 }

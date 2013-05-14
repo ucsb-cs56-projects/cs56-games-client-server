@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 /**
  * gictactoeservice allows clientconnect to communicate with tictactoe game
@@ -35,7 +35,7 @@ public class TicTacToeService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init();
         }
 
@@ -85,7 +85,7 @@ public class TicTacToeService extends TwoPlayerGameService {
 
         if(!gameStarted)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
@@ -93,7 +93,7 @@ public class TicTacToeService extends TwoPlayerGameService {
         if(string.indexOf("MOVE;") == 0) {
             if(gameData.winner != 0)
                 return;
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X = Integer.parseInt(data[0]);
             int Y = Integer.parseInt(data[1]);
@@ -119,12 +119,12 @@ public class TicTacToeService extends TwoPlayerGameService {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

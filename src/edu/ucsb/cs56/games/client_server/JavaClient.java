@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import java.io.*;
 import java.net.*;
@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
+
+import edu.ucsb.cs56.games.client_server.Views.ChessViewPanel;
 
 /**
  * JavaClient is the main runnable client-side application, it allows users to connect to a server on a specific port
@@ -26,7 +28,7 @@ public class JavaClient implements KeyListener {
     BufferedReader reader;
     PrintWriter writer;
 
-    ArrayList<ClientObject> clients;
+    private ArrayList<ClientObject> clients;
     ArrayList<Integer> services;
     
     ArrayList<Message> messages;
@@ -42,7 +44,7 @@ public class JavaClient implements KeyListener {
     JList userList;
     DefaultListModel listModel;
 
-    int id;
+    private int id;
     String name;
     int location;
 
@@ -50,7 +52,7 @@ public class JavaClient implements KeyListener {
     
     InputReader thread;
     RefreshThread refreshThread;
-    boolean connected;
+    private boolean connected;
 
     public static void main(String [] args) {
         javaClient = new JavaClient();
@@ -65,7 +67,7 @@ public class JavaClient implements KeyListener {
             public void windowClosing(WindowEvent winEvt) {
                 if(thread != null)
                     thread.running = false;
-                if(connected)
+                if(isConnected())
                     sendMessage("DCON;Window Closed");
 
                 System.exit(0);
@@ -191,7 +193,7 @@ public class JavaClient implements KeyListener {
 
 
     public void init() {
-        clients = new ArrayList<ClientObject>();
+        setClients(new ArrayList<ClientObject>());
         services = new ArrayList<Integer>();
         messages = new ArrayList<Message>();
     }
@@ -203,21 +205,21 @@ public class JavaClient implements KeyListener {
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
-                    synchronized (clients) {
+                    synchronized (getClients()) {
                         listModel.clear();
                         if(location < 0)
                             return;
                         listModel.addElement(new Username(name,null,2));
-                        for(int i=clients.size()-1;i>=0;i--) {
-                            ClientObject client = clients.get(i);
+                        for(int i=getClients().size()-1;i>=0;i--) {
+                            ClientObject client = getClients().get(i);
                             if(client != null) {
-                                if(client.id == id)
+                                if(client.getId() == getId())
                                     continue;
                                 if(client.location == location || services.size() <= client.location)
-                                    listModel.insertElementAt((new Username(client.name,null,0)),1);
+                                    listModel.insertElementAt((new Username(client.getName(),null,0)),1);
                                 else {
 //                                    System.out.println(client.location+", "+serviceList.size()+", "+services.size());
-                                    listModel.addElement(new Username(client.name," ("+client.location+":"+Service.getGameType(services.get(client.location))+")",1));
+                                    listModel.addElement(new Username(client.getName()," ("+client.location+":"+Service.getGameType(services.get(client.location))+")",1));
                                 }
                             }
                         }
@@ -253,13 +255,13 @@ public class JavaClient implements KeyListener {
      * @param port - the port number
      */
     public void connect(String ip, int port) {
-        if(connected)
+        if(isConnected())
             return;
         try {
             System.out.println("Connecting to "+ip+":"+port);
             sock = new Socket(ip,port);
             System.out.println("Connected");
-            connected = true;
+            setConnected(true);
             init();
             stream = new InputStreamReader(sock.getInputStream());
             reader = new BufferedReader(stream);
@@ -293,36 +295,36 @@ public class JavaClient implements KeyListener {
         if(string.indexOf("CON;") == 0) {
             int pid = Integer.parseInt(string.substring(4));
             System.out.println("Client "+pid+" has connected");
-            while(clients.size() <= pid)
-                clients.add(null);
-            if(clients.get(pid) == null)
-                clients.set(pid, new ClientObject(pid));
+            while(getClients().size() <= pid)
+                getClients().add(null);
+            if(getClients().get(pid) == null)
+                getClients().set(pid, new ClientObject(pid));
             else
                 sendMessage("INFO;");
-            messages.add(new Message(clients.get(pid).name+" connected", "Server",true,false));
+            messages.add(new Message(getClients().get(pid).getName()+" connected", "Server",true,false));
             updateClients();
             updateMessages();
         } else if(string.indexOf("DCON[") == 0) {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             System.out.println("Client " + pid + " has disconnected: " + data[1]);
-            if(clients.size() > pid && clients.get(pid) != null) {
-                messages.add(new Message(clients.get(pid).name + " disconnected: "+data[1], "Server", true, false));
-                clients.set(pid, null);
+            if(getClients().size() > pid && getClients().get(pid) != null) {
+                messages.add(new Message(getClients().get(pid).getName() + " disconnected: "+data[1], "Server", true, false));
+                getClients().set(pid, null);
             }
             updateClients();
             updateMessages();
-            if(pid == id)
+            if(pid == getId())
                 thread.running = false;
         } else if(string.indexOf("MSG[") == 0) {
             String[] data = string.substring(4).split("]");
             int pid = Integer.parseInt(data[0]);
-            if(clients.size() <= pid || clients.get(pid) == null)
+            if(getClients().size() <= pid || getClients().get(pid) == null)
                 return;
             String msg = string.substring(4+data[0].length()+1);
             System.out.println("Client "+pid+" said "+msg);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name,false,false));
+            if(getClients().size() > pid) {
+                messages.add(new Message(msg,getClients().get(pid).getName(),false,false));
                 updateMessages();
             }
         } else if(string.indexOf("PMSG[") == 0) {
@@ -330,16 +332,16 @@ public class JavaClient implements KeyListener {
             int pid = Integer.parseInt(data[0]);
             String msg = string.substring(5+data[0].length()+1);
             System.out.println("Client "+pid+" privately said "+msg);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name, true, false));
+            if(getClients().size() > pid) {
+                messages.add(new Message(msg,getClients().get(pid).getName(), true, false));
                 updateMessages();
             }
         } else if(string.indexOf("RMSG[") == 0) {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             String msg = string.substring(5+data[0].length()+1);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name,true,true));
+            if(getClients().size() > pid) {
+                messages.add(new Message(msg,getClients().get(pid).getName(),true,true));
                 updateMessages();
             }
         } else if(string.indexOf("SMSG;") == 0) {
@@ -349,9 +351,9 @@ public class JavaClient implements KeyListener {
                 updateMessages();
             }
         } else if(string.indexOf("ID;") == 0) {
-            id = Integer.parseInt(string.substring(3));
+            setId(Integer.parseInt(string.substring(3)));
             if(name == null)
-                name = "User"+id;
+                name = "User"+getId();
 
             sendMessage("CON;");
             sendMessage("NAME;"+name);
@@ -361,16 +363,16 @@ public class JavaClient implements KeyListener {
             String[] connected = string.substring(4).split(";");
             for(int i=0;i<connected.length;i++) {
                 String[] info = connected[i].split(",");
-                if(clients.size() <= i)
-                    clients.add(null);
+                if(getClients().size() <= i)
+                    getClients().add(null);
                 if(connected[i].equals(","))
                     continue;
                 if(info[0].equals("")) {
-                    if(clients.get(i) != null)
-                        clients.set(i, null);
+                    if(getClients().get(i) != null)
+                        getClients().set(i, null);
                 } else {
-                    clients.set(i, new ClientObject(i, info[0], Integer.parseInt(info[1])));
-                    if(id == i)
+                    getClients().set(i, new ClientObject(i, info[0], Integer.parseInt(info[1])));
+                    if(getId() == i)
                         changeLocation(Integer.parseInt(info[1]));
                 }
             }
@@ -392,22 +394,22 @@ public class JavaClient implements KeyListener {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             String pname = data[1];
-            if(clients.size() <= pid)
+            if(getClients().size() <= pid)
                 return;
-            if(clients.get(pid) == null)
-                clients.set(pid, new ClientObject(id, pname, 0));
+            if(getClients().get(pid) == null)
+                getClients().set(pid, new ClientObject(getId(), pname, 0));
             //messages.add(new edu.ucsb.cs56.W12.jcolicchio.issue535.Message(clients.get(pid).name+" changed his name to "+pname, "Server",true,false,clients.get(0).getColor()));
-            clients.get(pid).name = pname;
-            if(pid == id)
+            getClients().get(pid).setName(pname);
+            if(pid == getId())
                 name = pname;
             updateClients();
             updateMessages();
         } else if(string.indexOf("MOVED[") == 0) {
             String[] data = string.substring(6).split("]");
             int pid = Integer.parseInt(data[0]);
-            clients.get(pid).location = Integer.parseInt(data[1]);
-            if(pid == id) {
-                changeLocation(clients.get(id).location);
+            getClients().get(pid).location = Integer.parseInt(data[1]);
+            if(pid == getId()) {
+                changeLocation(getClients().get(getId()).location);
             }
             updateClients();
             updateMessages();
@@ -435,7 +437,7 @@ public class JavaClient implements KeyListener {
             else if(serviceType == 2)
                 canvasRef = new GomokuPanel();
             else if(serviceType == 3)
-                canvasRef = new ChessPanel();
+                canvasRef = new ChessViewPanel();
         }
 
         SwingUtilities.invokeLater(
@@ -476,7 +478,31 @@ public class JavaClient implements KeyListener {
         Keys[keyEvent.getKeyCode()] = false;
     }
 
-    /** listens for the send button's action and sends a message, if connected
+    public ArrayList<ClientObject> getClients() {
+		return clients;
+	}
+
+	public void setClients(ArrayList<ClientObject> clients) {
+		this.clients = clients;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+	/** listens for the send button's action and sends a message, if connected
      *
      */
     class SendListener implements ActionListener {
@@ -490,7 +516,7 @@ public class JavaClient implements KeyListener {
                 return;
 
             inputBox.setText("");
-            if(connected) {
+            if(isConnected()) {
                 sendMessage("MSG;"+message);
             }
         }
@@ -515,7 +541,7 @@ public class JavaClient implements KeyListener {
             } catch(Exception ex) {
                 ex.printStackTrace();
                 System.out.println("crashed for some other reason, disconnecting...");
-                writer.println("DCON;"+id);
+                writer.println("DCON;"+getId());
                 writer.flush();
             }
 
@@ -524,7 +550,7 @@ public class JavaClient implements KeyListener {
             }catch(IOException e){
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            connected = false;
+            setConnected(false);
             outputBox.setText("");
             updateClients();
             changeLocation(-1);

@@ -1,7 +1,10 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import javax.swing.*;
 import javax.swing.text.Utilities;
+
+import edu.ucsb.cs56.games.client_server.Controllers.ChessController;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -151,7 +154,7 @@ public class JavaServer{
     public static int findClientByName(String name) {
         synchronized (clients) {
             for(int i=0;i<clients.size();i++) {
-                if(clients.get(i) != null && clients.get(i).client.name.equalsIgnoreCase(name))
+                if(clients.get(i) != null && clients.get(i).client.getName().equalsIgnoreCase(name))
                     return i;
             }
         }
@@ -205,7 +208,7 @@ public class JavaServer{
         else if(serviceType == 2)
             service = new GomokuService(serviceID);
         else if(serviceType == 3)
-            service = new ChessService(serviceID);
+            service = new ChessController(serviceID);
 
         if(service == null)
             return -1;

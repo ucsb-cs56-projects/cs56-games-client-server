@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 /**
  * server connect was a specific dummy user that joined every service when it was made, and allowed the server to "speak"
@@ -14,7 +14,7 @@ public class ServerConnect extends ClientConnect {
     public ServerConnect(int id) {
         super(null);
         client = new ClientObject(id, "Server", 0);
-        System.out.println("server has client: "+client.name);
+        System.out.println("server has client: "+client.getName());
     }
 
     @Override
