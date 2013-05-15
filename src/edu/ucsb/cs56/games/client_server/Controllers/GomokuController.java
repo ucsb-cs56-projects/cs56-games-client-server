@@ -1,33 +1,65 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Controllers;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
+import edu.ucsb.cs56.games.client_server.Models.GomokuModel;
 
 /**
- * gictactoeservice allows clientconnect to communicate with tictactoe game
+ * GomokuService is a server-side service that allows clients to send moves to the server's copy of a gomoku game
  *
  * @author Joseph Colicchio
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class TicTacToeService extends TwoPlayerGameService {
-    public TicTacToeGame gameData;
+public class GomokuController extends TwoPlayerGameController {
+    public GomokuModel gameData;
 
-    public ClientConnect player1;
-    public ClientConnect player2;
+    public ClientNetworkController player1;
+    public ClientNetworkController player2;
 
     public boolean gameStarted;
 
-    public TicTacToeService(int ID) {
+    /**
+     * start gomoku service with id ID
+     * @param ID id of service
+     */
+    public GomokuController(int ID) {
         super(ID);
-        gameData = new TicTacToeGame();
-        type = 1;
-        name = "TicTacToe";
+        gameData = new GomokuModel();
+        type = 2;
+        name = "Gomoku";
     }
-    
+
+    /**
+     * initialize with size
+     * @param SIZE size of board to init with
+     */
+    public void init(int SIZE) {
+        gameData.init(SIZE);
+        broadcastData("SIZE;"+SIZE);
+    }
+
+    /**
+     * default size is 9
+     */
     public void init() {
-        gameData.init();
+        gameData.init(9);
         broadcastData("INIT;");
     }
 
-    public void playClient(ClientConnect client) {
+    /**
+     * add client to service
+     * @param client clientconnect object to add
+     */
+    public void addClient(ClientNetworkController client) {
+        super.addClient(client);
+        client.sendMessage("SIZE;"+gameData.cells);
+    }
+
+    /**
+     * set client as a player
+     * @param client client to play
+     */
+    public void playClient(ClientNetworkController client) {
         if(player1 == null) {
             player1 = client;
             gameData.player1 = client.client;
@@ -36,14 +68,19 @@ public class TicTacToeService extends TwoPlayerGameService {
             gameData.player2 = client.client;
             gameStarted = true;
             System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
-            gameData.init();
+            gameData.init(gameData.cells);
         }
 
         updateAll();
     }
 
     //if a client was a player, spec him, and then probably stop the game
-    public void specClient(ClientConnect client) {
+
+    /**
+     * set playing client as spectator
+     * @param client client to spectate
+     */
+    public void specClient(ClientNetworkController client) {
         if(player1 != client && player2 != client)
             return;
         if(player1 == client) {
@@ -52,25 +89,34 @@ public class TicTacToeService extends TwoPlayerGameService {
             player2 = null;
             gameData.player2 = null;
             gameStarted = false;
-            gameData.init();
+            gameData.init(gameData.cells);
         }
         if(player2 == client) {
             player2 = null;
             gameData.player2 = null;
             gameStarted = false;
-            gameData.init();
+            gameData.init(gameData.cells);
         }
 
         updateAll();
     }
 
     //get move from player, if it's their turn
-    public void handleData(ClientConnect client, String string) {
+
+    /**
+     * handle info from client
+     * @param client the client sending the data
+     * @param string data to handle
+     */
+    public void handleData(ClientNetworkController client, String string) {
         if(string.indexOf("PLAY;") == 0)
             playClient(client);
         else if(string.indexOf("SPEC;") == 0)
             specClient(client);
-        else if(string.indexOf("MSG;") == 0) {
+        else if(string.indexOf("SIZE;") == 0) {
+            int size = Integer.parseInt(string.substring(5));
+            init(size);
+        } else if(string.indexOf("MSG;") == 0) {
             String message = string.substring(4);
             if(message.indexOf("/play")==0) {
                 playClient(client);
@@ -78,21 +124,22 @@ public class TicTacToeService extends TwoPlayerGameService {
                 specClient(client);
             } else if(message.indexOf("/newgame") == 0) {
                 if(client == player1 || client == player2)
-                    init();
+                    init(gameData.cells);
             } else
                 super.handleData(client, string);
         }
 
-        if(!gameStarted)
+        if(!gameStarted || gameData.winner > 0)
             return;
         System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
             return;
+
+        //this is an optional setting, some games may use it, eventually implement rule checkboxes
+        //TODO: disallow moves that result in forming two 3's, (unblocked?), or 2 4's, blocked or unblocked
         if(string.indexOf("MOVE;") == 0) {
-            if(gameData.winner != 0)
-                return;
             System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X = Integer.parseInt(data[0]);
@@ -109,10 +156,13 @@ public class TicTacToeService extends TwoPlayerGameService {
         }
     }
 
-    //this could be done better, just broadcast gameData.getGameState and have that function generate this:
-    //wait but that isnt possible
     //sends the state of the game to a player
-    public void sendGameState(ClientConnect client) {
+
+    /**
+     * send state of the game to client
+     * @param client client to send state to
+     */
+    public void sendGameState(ClientNetworkController client) {
         if(client == null)
             return;
         synchronized (client) {

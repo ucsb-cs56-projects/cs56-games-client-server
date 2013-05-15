@@ -1,6 +1,8 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Controllers;
 
 import java.util.ArrayList;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
 
 /**
  * Service is an abstract class to be extended by all services
@@ -11,10 +13,10 @@ import java.util.ArrayList;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public abstract class Service{
+public abstract class Controller{
     private static ArrayList<String> serviceList;
     private static int numServices;
-    public ArrayList<ClientConnect> clients;
+    public ArrayList<ClientNetworkController> clients;
     public String name;
     public int id;
     public int type;
@@ -59,13 +61,13 @@ public abstract class Service{
      * add a client to this service
      * @param client client to add
      */
-    public abstract void addClient(ClientConnect client);
+    public abstract void addClient(ClientNetworkController client);
 
     /**
      * remove a client from this service
      * @param client client to remove
      */
-    public abstract void removeClient(ClientConnect client);
+    public abstract void removeClient(ClientNetworkController client);
 
     /**
      * send data to all clients on service
@@ -78,12 +80,12 @@ public abstract class Service{
      * @param client client sending the data
      * @param data data to handle
      */
-    public abstract void handleData(ClientConnect client, String data);
+    public abstract void handleData(ClientNetworkController client, String data);
 
     /**
      * switch a client from one service to another
      * @param client client to switch
      * @param service service to switch to
      */
-    public abstract void switchServices(ClientConnect client, Service service);
+    public abstract void switchServices(ClientNetworkController client, Controller service);
 }

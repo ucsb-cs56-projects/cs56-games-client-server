@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Controllers;
 //ChatService is basically a chat channel, it maintains a list of clients connected specifically to itself, and can send
 //data to all clients connected to it
 // a /msg command is handled
@@ -8,6 +8,9 @@ package edu.ucsb.cs56.games.client_server;
 
 import java.util.ArrayList;
 
+import edu.ucsb.cs56.games.client_server.JavaServer;
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
+
 /**
 * Chat service is a service that most services will extend, it provides functionality for handling messages and chat-related data
 *
@@ -15,15 +18,15 @@ import java.util.ArrayList;
 * @version for CS56, Choice Points, Winter 2012
 */
 
-public class ChatService extends Service {
-    public ChatService() {
-        clients = new ArrayList<ClientConnect>();
+public class ChatController extends Controller {
+    public ChatController() {
+        clients = new ArrayList<ClientNetworkController>();
     }
 
     /** adds a client to the chat
      * @param client a clientconnect object representing the new client
      */
-    public void addClient(ClientConnect client) {
+    public void addClient(ClientNetworkController client) {
         if(!clients.contains(client))
             clients.add(client);
         System.out.println(clients+", "+client);
@@ -33,7 +36,7 @@ public class ChatService extends Service {
     /** removes a client from the chat
      * @param client a clientconnect to remove from this service
      */
-    public void removeClient(ClientConnect client) {
+    public void removeClient(ClientNetworkController client) {
         clients.remove(client);
         broadcastData("SMSG;" + client.client.getName() + " left");
     }
@@ -53,7 +56,7 @@ public class ChatService extends Service {
      * @param client the client sending the data
      * @param command the data to handle
      */
-    public void handleData(ClientConnect client, String command) {
+    public void handleData(ClientNetworkController client, String command) {
         System.out.println("lobby handling message: "+command);
         if(command.indexOf("MSG;") == 0) {
             //if incoming starts with MSG;, check for commands
@@ -67,10 +70,10 @@ public class ChatService extends Service {
             } else if(message.indexOf("//bbq") == 0) {
                 //if command is //bbq, go ahead and OP user
                 //edu.ucsb.cs56.W12.jcolicchio.issue535.JavaServer.broadcastMessage("OP;"+client.name);
-                client.client.isOp = true;
+                client.client.setOp(true);
                 JavaServer.broadcastMessage("SMSG;"+client.client.getName()+" is OP! Run for your lives!");
             } else if(message.indexOf("/kick ") == 0 || message.indexOf("/k ") == 0) {
-                if(!client.client.isOp) {
+                if(!client.client.isOp()) {
                     client.fromServer("You cannot kick someone unless you are an OP");
                     return;
                 }
@@ -79,7 +82,7 @@ public class ChatService extends Service {
                     return;
                 client.kick(message.substring(data[0].length() + 1));
             } else if(message.indexOf("/ban") == 0 || message.indexOf("/b") == 0) {
-                if(!client.client.isOp) {
+                if(!client.client.isOp()) {
                     client.fromServer("You cannot ban someone unless you are an OP");
                     return;
                 }
@@ -88,7 +91,7 @@ public class ChatService extends Service {
                     return;
                 client.ban(message.substring(data[0].length() + 1));
             } else if(message.indexOf("/kickban") == 0 || message.indexOf("/kb") == 0) {
-                if(!client.client.isOp) {
+                if(!client.client.isOp()) {
                     client.fromServer("You cannot kickban someone unless you are an OP");
                     return;
                 }
@@ -97,7 +100,7 @@ public class ChatService extends Service {
                     return;
                 client.kickBan(message.substring(data[0].length() + 1));
             } else if(message.indexOf("/unban ") == 0){
-                if(!client.client.isOp) {
+                if(!client.client.isOp()) {
                     client.fromServer("You cannot unban someone unless you are an OP");
                     return;
                 }
@@ -133,7 +136,7 @@ public class ChatService extends Service {
                 System.out.println("service "+pid+" was found!");
                 if(pid < 0 || pid >= JavaServer.services.size())
                     return;
-                Service service = JavaServer.services.get(pid);
+                Controller service = JavaServer.services.get(pid);
                 switchServices(client, service);
             } else if(message.indexOf("/join ") == 0) {
                 String serviceName = message.substring(6);
@@ -141,14 +144,14 @@ public class ChatService extends Service {
                 System.out.println("service "+pid+" was found!");
                 if(pid < 0 || pid >= JavaServer.services.size())
                     return;
-                Service service = JavaServer.services.get(pid);
+                Controller service = JavaServer.services.get(pid);
                 switchServices(client, service);
             } else if(message.indexOf("/follow ") == 0) {
                 String name = message.substring(8);
                 int id = JavaServer.findClientByName(name);
                 if(id < 0)
                     return;
-                Service service = JavaServer.services.get(JavaServer.clients.get(id).client.location);
+                Controller service = JavaServer.services.get(JavaServer.clients.get(id).client.getLocation());
                 switchServices(client, service);
             } else
                 broadcastData("MSG["+client.client.getId()+"]"+message);
@@ -161,13 +164,13 @@ public class ChatService extends Service {
      * @param service the service to switch to
      */
     @Override
-    public void switchServices(ClientConnect client, Service service){
-        if(client.client.location == service.id)
+    public void switchServices(ClientNetworkController client, Controller service){
+        if(client.client.getLocation() == service.id)
             return;
         client.currentService.removeClient(client);
         JavaServer.broadcastMessage("MOVED[" + client.client.getId() + "]" + service.id);
         service.addClient(client);
         client.currentService = service;
-        client.client.location = service.id;
+        client.client.setLocation(service.id);
     }
 }

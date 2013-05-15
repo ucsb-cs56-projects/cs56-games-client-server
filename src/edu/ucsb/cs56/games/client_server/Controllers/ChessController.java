@@ -1,7 +1,6 @@
 package edu.ucsb.cs56.games.client_server.Controllers;
 
-import edu.ucsb.cs56.games.client_server.ClientConnect;
-import edu.ucsb.cs56.games.client_server.TwoPlayerGameService;
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
 import edu.ucsb.cs56.games.client_server.Models.ChessModel;
 
 /**
@@ -13,11 +12,11 @@ import edu.ucsb.cs56.games.client_server.Models.ChessModel;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessController extends TwoPlayerGameService {
+public class ChessController extends TwoPlayerGameController {
     public ChessModel gameData;
 
-    public ClientConnect player1;
-    public ClientConnect player2;
+    public ClientNetworkController player1;
+    public ClientNetworkController player2;
 
     public boolean gameStarted;
 
@@ -45,7 +44,7 @@ public class ChessController extends TwoPlayerGameService {
      * set client as a player of the game, if possible
      * @param client client to make a player
      */
-    public void playClient(ClientConnect client) {
+    public void playClient(ClientNetworkController client) {
         if(player1 == null) {
             player1 = client;
             gameData.player1 = client.client;
@@ -66,7 +65,7 @@ public class ChessController extends TwoPlayerGameService {
      * set playing client as spectator instead
      * @param client client to stop from playing
      */
-    public void specClient(ClientConnect client) {
+    public void specClient(ClientNetworkController client) {
         if(player1 != client && player2 != client)
             return;
         if(player1 == client) {
@@ -94,7 +93,7 @@ public class ChessController extends TwoPlayerGameService {
      * @param client the client sending the data
      * @param string data to handle
      */
-    public void handleData(ClientConnect client, String string) {
+    public void handleData(ClientNetworkController client, String string) {
         if(string.indexOf("PLAY;") == 0)
             playClient(client);
         else if(string.indexOf("SPEC;") == 0)
@@ -160,7 +159,7 @@ public class ChessController extends TwoPlayerGameService {
      * send the client the state of the game
      * @param client client to send to
      */
-    public void sendGameState(ClientConnect client) {
+    public void sendGameState(ClientNetworkController client) {
         if(client == null)
             return;
         synchronized (clients) {

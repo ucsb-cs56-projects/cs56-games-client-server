@@ -4,6 +4,11 @@ import javax.swing.*;
 import javax.swing.text.Utilities;
 
 import edu.ucsb.cs56.games.client_server.Controllers.ChessController;
+import edu.ucsb.cs56.games.client_server.Controllers.GomokuController;
+import edu.ucsb.cs56.games.client_server.Controllers.LobbyController;
+import edu.ucsb.cs56.games.client_server.Controllers.Controller;
+import edu.ucsb.cs56.games.client_server.Controllers.TicTacToeController;
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,9 +32,9 @@ import java.util.Enumeration;
 //start a java message server that listens for connections to port X and then connects the client 
 public class JavaServer{
     //this belongs to the server itself, independent of the chat standards
-    public static ArrayList<ClientConnect> clients;
-    public static ArrayList<Service> services;
-    public static LobbyService lobby;
+    public static ArrayList<ClientNetworkController> clients;
+    public static ArrayList<Controller> services;
+    public static LobbyController lobby;
     
     public JTextField port_box;
     public ConnectButton connectButton;
@@ -190,8 +195,8 @@ public class JavaServer{
         }
         
         int serviceType = -1;
-        for(int i=0;i<Service.getNumServices();i++) {
-            if(Service.getGameType(i).equalsIgnoreCase(name))
+        for(int i=0;i<Controller.getNumServices();i++) {
+            if(Controller.getGameType(i).equalsIgnoreCase(name))
                 serviceType = i;
         }
         
@@ -200,13 +205,13 @@ public class JavaServer{
 
         int serviceID = services.size();
 
-        Service service = null;
+        Controller service = null;
         if(serviceType == 0)
-            service = new LobbyService(serviceID);
+            service = new LobbyController(serviceID);
         else if(serviceType == 1)
-            service = new TicTacToeService(serviceID);
+            service = new TicTacToeController(serviceID);
         else if(serviceType == 2)
-            service = new GomokuService(serviceID);
+            service = new GomokuController(serviceID);
         else if(serviceType == 3)
             service = new ChessController(serviceID);
 
@@ -297,11 +302,11 @@ public class JavaServer{
         
         public void run() {
             running = true;
-            clients = new ArrayList<ClientConnect>();
+            clients = new ArrayList<ClientNetworkController>();
             bannedList = new ArrayList<String>();
 
-            services = new ArrayList<Service>();
-            lobby = new LobbyService(0);
+            services = new ArrayList<Controller>();
+            lobby = new LobbyController(0);
             services.add(lobby);
 
             //clients.add(new edu.ucsb.cs56.W12.jcolicchio.issue535.EchoConnect(clients.size()));
@@ -326,7 +331,7 @@ public class JavaServer{
 
                     System.out.println("incoming connecting...");
                     //give them a client object, run it in a thread
-                    ClientConnect conn = new ClientConnect(sock);
+                    ClientNetworkController conn = new ClientNetworkController(sock);
                     Thread thread = new Thread(conn);
                     thread.start();
                     System.out.println("thread started");

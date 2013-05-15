@@ -2,10 +2,9 @@ package edu.ucsb.cs56.games.client_server.Views;
 
 import javax.swing.*;
 
-import edu.ucsb.cs56.games.client_server.GamePanel;
 import edu.ucsb.cs56.games.client_server.JavaClient;
-import edu.ucsb.cs56.games.client_server.Res;
 import edu.ucsb.cs56.games.client_server.Models.ChessModel;
+import edu.ucsb.cs56.games.client_server.Models.ResModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessViewPanel extends GamePanel {
+public class ChessViewPanel extends GameViewPanel {
     ChessModel game;
     int player1, player2;
 //    ArrayList<Character> capt1, capt2;
@@ -69,7 +68,7 @@ public class ChessViewPanel extends GamePanel {
     //TODO: service panel should ask for information about service, i.e. state, players, etc
 
     public ChessViewPanel() {
-        pieces = Res.ChessPieces;
+        pieces = ResModel.ChessPieces;
         setLayout(new BorderLayout());
         menuButtons = new JPanel();
         add(BorderLayout.SOUTH, menuButtons);

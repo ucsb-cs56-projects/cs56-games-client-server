@@ -1,6 +1,9 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Views;
 
 import javax.swing.*;
+
+import edu.ucsb.cs56.games.client_server.JavaClient;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,12 +19,12 @@ import java.awt.event.MouseEvent;
  */
 
 //TODO: make new thread when connect is clicked, which is resolved as soon as the connection is made, but does not freeze the gui while waiting
-public class OfflinePanel extends GamePanel {
+public class OfflineViewPanel extends GameViewPanel {
     JTextField ip_box;
     JTextField port_box;
     ConnectButton connectButton;
     
-    public OfflinePanel(String IP, int PORT) {
+    public OfflineViewPanel(String IP, int PORT) {
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         ip_box = new JTextField("127.0.0.1");
         ip_box.setPreferredSize(new Dimension(100,22));

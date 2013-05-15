@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Models;
 
 import java.util.ArrayList;
 
@@ -11,27 +11,27 @@ import java.util.ArrayList;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ClientObject{
+public class ClientModel{
     private int id;
     private String name;
-    int location;
+    private int location;
 
-    boolean isOp;
+    private boolean isOp;
 
     static ArrayList<Integer> colors;
     static boolean _init;
 
-    public ClientObject(int n) {
+    public ClientModel(int n) {
         //new client object made, stores data about client
         setId(n);
         setName("User"+n);
-        location = 0;
+        setLocation(0);
     }
     
-    public ClientObject(int n, String NAME, int LOCATION) {
+    public ClientModel(int n, String NAME, int LOCATION) {
         setId(n);
         setName(NAME);
-        location = LOCATION;
+        setLocation(LOCATION);
     }
 
     public static void init() {
@@ -66,5 +66,21 @@ public class ClientObject{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public boolean isOp() {
+		return isOp;
+	}
+
+	public void setOp(boolean isOp) {
+		this.isOp = isOp;
+	}
+
+	public int getLocation() {
+		return location;
+	}
+
+	public void setLocation(int location) {
+		this.location = location;
 	}
 }

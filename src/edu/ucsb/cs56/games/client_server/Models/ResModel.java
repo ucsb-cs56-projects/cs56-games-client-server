@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Models;
 
 import java.awt.Image;
 import java.io.IOException;
@@ -14,10 +14,10 @@ import javax.imageio.ImageIO;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class Res {
+public class ResModel {
     public static Image ChessPieces;
 
-    public Res() {
+    public ResModel() {
 
     }
 

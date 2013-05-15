@@ -3,7 +3,6 @@ package edu.ucsb.cs56.games.client_server.Models;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import edu.ucsb.cs56.games.client_server.ClientObject;
 
 /**
  * Game object for chess game, provides ridiculously complex methods for determining if any move from X1,Y1 to X2,Y1 is
@@ -15,7 +14,7 @@ import edu.ucsb.cs56.games.client_server.ClientObject;
  */
 
 public class ChessModel{
-    public ClientObject player1, player2;
+    public ClientModel player1, player2;
 
     public char[][] grid;
     public ArrayList<Character> captured;

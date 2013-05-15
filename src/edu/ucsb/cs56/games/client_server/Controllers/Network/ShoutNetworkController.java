@@ -1,4 +1,7 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Controllers.Network;
+
+import edu.ucsb.cs56.games.client_server.JavaServer;
+import edu.ucsb.cs56.games.client_server.Models.ClientModel;
 
 /**
  * Shout connect is a dummy client that listens for private messages and repeats them publically
@@ -8,10 +11,10 @@ package edu.ucsb.cs56.games.client_server;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ShoutConnect extends ClientConnect {
-    public ShoutConnect(int id) {
+public class ShoutNetworkController extends ClientNetworkController {
+    public ShoutNetworkController(int id) {
         super(null);
-        client = new ClientObject(id,"SHOUT",0);
+        client = new ClientModel(id,"SHOUT",0);
     }
 
     @Override

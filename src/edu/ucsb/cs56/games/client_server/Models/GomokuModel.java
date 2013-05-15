@@ -1,4 +1,5 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Models;
+
 
 
 /**
@@ -9,8 +10,8 @@ package edu.ucsb.cs56.games.client_server;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class GomokuGame{
-    public ClientObject player1, player2;
+public class GomokuModel{
+    public ClientModel player1, player2;
 
     public int[][] grid;
     public int turn;
@@ -18,7 +19,7 @@ public class GomokuGame{
     
     public int cells;
 
-    public GomokuGame() {
+    public GomokuModel() {
         init(9);
     }
 

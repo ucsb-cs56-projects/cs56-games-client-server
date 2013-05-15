@@ -1,4 +1,7 @@
-package edu.ucsb.cs56.games.client_server;
+package edu.ucsb.cs56.games.client_server.Controllers.Network;
+
+import edu.ucsb.cs56.games.client_server.JavaServer;
+import edu.ucsb.cs56.games.client_server.Models.ClientModel;
 
 /**
  * Echo connect was removed from the server, but used to be a dummy client which, when privately messaged by a real client,
@@ -8,10 +11,10 @@ package edu.ucsb.cs56.games.client_server;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class EchoConnect extends ClientConnect {
-    public EchoConnect(int id) {
+public class EchoNetworkController extends ClientNetworkController {
+    public EchoNetworkController(int id) {
         super(null);
-        client = new ClientObject(id,"Echo",0);
+        client = new ClientModel(id,"Echo",0);
     }
 
     @Override
