@@ -7,3 +7,10 @@
 
 # Temp Files #
 *~
+
+# Silly Mac
+.DS_Store
+
+# Eclipse stuff
+.project
+.classpath

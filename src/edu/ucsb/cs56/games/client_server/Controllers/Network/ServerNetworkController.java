@@ -1,4 +1,6 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers.Network;
+
+import edu.ucsb.cs56.games.client_server.Models.ClientModel;
 
 /**
  * server connect was a specific dummy user that joined every service when it was made, and allowed the server to "speak"
@@ -10,11 +12,11 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ServerConnect extends ClientConnect {
-    public ServerConnect(int id) {
+public class ServerNetworkController extends ClientNetworkController {
+    public ServerNetworkController(int id) {
         super(null);
-        client = new ClientObject(id, "Server", 0);
-        System.out.println("server has client: "+client.name);
+        client = new ClientModel(id, "Server", 0);
+        System.out.println("server has client: "+client.getName());
     }
 
     @Override

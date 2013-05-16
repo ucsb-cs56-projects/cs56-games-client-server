@@ -1,4 +1,7 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
+import edu.ucsb.cs56.games.client_server.Models.GomokuModel;
 
 /**
  * GomokuService is a server-side service that allows clients to send moves to the server's copy of a gomoku game
@@ -7,11 +10,11 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class GomokuService extends TwoPlayerGameService {
-    public GomokuGame gameData;
+public class GomokuController extends TwoPlayerGameController {
+    public GomokuModel gameData;
 
-    public ClientConnect player1;
-    public ClientConnect player2;
+    public ClientNetworkController player1;
+    public ClientNetworkController player2;
 
     public boolean gameStarted;
 
@@ -19,9 +22,9 @@ public class GomokuService extends TwoPlayerGameService {
      * start gomoku service with id ID
      * @param ID id of service
      */
-    public GomokuService(int ID) {
+    public GomokuController(int ID) {
         super(ID);
-        gameData = new GomokuGame();
+        gameData = new GomokuModel();
         type = 2;
         name = "Gomoku";
     }
@@ -47,7 +50,7 @@ public class GomokuService extends TwoPlayerGameService {
      * add client to service
      * @param client clientconnect object to add
      */
-    public void addClient(ClientConnect client) {
+    public void addClient(ClientNetworkController client) {
         super.addClient(client);
         client.sendMessage("SIZE;"+gameData.cells);
     }
@@ -56,7 +59,7 @@ public class GomokuService extends TwoPlayerGameService {
      * set client as a player
      * @param client client to play
      */
-    public void playClient(ClientConnect client) {
+    public void playClient(ClientNetworkController client) {
         if(player1 == null) {
             player1 = client;
             gameData.player1 = client.client;
@@ -64,7 +67,7 @@ public class GomokuService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init(gameData.cells);
         }
 
@@ -77,7 +80,7 @@ public class GomokuService extends TwoPlayerGameService {
      * set playing client as spectator
      * @param client client to spectate
      */
-    public void specClient(ClientConnect client) {
+    public void specClient(ClientNetworkController client) {
         if(player1 != client && player2 != client)
             return;
         if(player1 == client) {
@@ -105,7 +108,7 @@ public class GomokuService extends TwoPlayerGameService {
      * @param client the client sending the data
      * @param string data to handle
      */
-    public void handleData(ClientConnect client, String string) {
+    public void handleData(ClientNetworkController client, String string) {
         if(string.indexOf("PLAY;") == 0)
             playClient(client);
         else if(string.indexOf("SPEC;") == 0)
@@ -128,7 +131,7 @@ public class GomokuService extends TwoPlayerGameService {
 
         if(!gameStarted || gameData.winner > 0)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
@@ -137,7 +140,7 @@ public class GomokuService extends TwoPlayerGameService {
         //this is an optional setting, some games may use it, eventually implement rule checkboxes
         //TODO: disallow moves that result in forming two 3's, (unblocked?), or 2 4's, blocked or unblocked
         if(string.indexOf("MOVE;") == 0) {
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X = Integer.parseInt(data[0]);
             int Y = Integer.parseInt(data[1]);
@@ -159,19 +162,19 @@ public class GomokuService extends TwoPlayerGameService {
      * send state of the game to client
      * @param client client to send state to
      */
-    public void sendGameState(ClientConnect client) {
+    public void sendGameState(ClientNetworkController client) {
         if(client == null)
             return;
         synchronized (client) {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

@@ -1,4 +1,7 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
+import edu.ucsb.cs56.games.client_server.Models.ChessModel;
 
 /**
  * Chess service is run by the server and essentially connects the clients to the server's copy of the chess game
@@ -9,11 +12,11 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessService extends TwoPlayerGameService {
-    public ChessGame gameData;
+public class ChessController extends TwoPlayerGameController {
+    public ChessModel gameData;
 
-    public ClientConnect player1;
-    public ClientConnect player2;
+    public ClientNetworkController player1;
+    public ClientNetworkController player2;
 
     public boolean gameStarted;
 
@@ -21,9 +24,9 @@ public class ChessService extends TwoPlayerGameService {
      * start the service with id number ID
      * @param ID id of the service
      */
-    public ChessService(int ID) {
+    public ChessController(int ID) {
         super(ID);
-        gameData = new ChessGame();
+        gameData = new ChessModel();
         type = 3;
         name = "Chess";
     }
@@ -41,7 +44,7 @@ public class ChessService extends TwoPlayerGameService {
      * set client as a player of the game, if possible
      * @param client client to make a player
      */
-    public void playClient(ClientConnect client) {
+    public void playClient(ClientNetworkController client) {
         if(player1 == null) {
             player1 = client;
             gameData.player1 = client.client;
@@ -49,7 +52,7 @@ public class ChessService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init();
         }
 
@@ -62,7 +65,7 @@ public class ChessService extends TwoPlayerGameService {
      * set playing client as spectator instead
      * @param client client to stop from playing
      */
-    public void specClient(ClientConnect client) {
+    public void specClient(ClientNetworkController client) {
         if(player1 != client && player2 != client)
             return;
         if(player1 == client) {
@@ -90,7 +93,7 @@ public class ChessService extends TwoPlayerGameService {
      * @param client the client sending the data
      * @param string data to handle
      */
-    public void handleData(ClientConnect client, String string) {
+    public void handleData(ClientNetworkController client, String string) {
         if(string.indexOf("PLAY;") == 0)
             playClient(client);
         else if(string.indexOf("SPEC;") == 0)
@@ -111,13 +114,13 @@ public class ChessService extends TwoPlayerGameService {
 
         if(!gameStarted || gameData.winner > 0)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
             return;
         if(string.indexOf("MOVE;") == 0) {
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X1 = Integer.parseInt(data[0]);
             int Y1 = Integer.parseInt(data[1]);
@@ -156,19 +159,19 @@ public class ChessService extends TwoPlayerGameService {
      * send the client the state of the game
      * @param client client to send to
      */
-    public void sendGameState(ClientConnect client) {
+    public void sendGameState(ClientNetworkController client) {
         if(client == null)
             return;
         synchronized (clients) {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

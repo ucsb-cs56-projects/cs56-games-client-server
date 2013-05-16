@@ -1,4 +1,5 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Models;
+
 
 /**
  * tictactoegame is a tic tac toe game object that stores data about a tic tac toe game, such as placement of Xs and Os,
@@ -8,14 +9,14 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class TicTacToeGame{
-    public ClientObject player1, player2;
+public class TicTacToeModel{
+    public ClientModel player1, player2;
     
     public int[][] grid;
     public int turn;
     public int winner;
 
-    public TicTacToeGame() {
+    public TicTacToeModel() {
         init();
     }
 
