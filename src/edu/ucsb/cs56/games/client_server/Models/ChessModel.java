@@ -1,7 +1,8 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Models;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
 
 /**
  * Game object for chess game, provides ridiculously complex methods for determining if any move from X1,Y1 to X2,Y1 is
@@ -12,8 +13,8 @@ import java.util.Arrays;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ChessGame{
-    public ClientObject player1, player2;
+public class ChessModel{
+    public ClientModel player1, player2;
 
     public char[][] grid;
     public ArrayList<Character> captured;
@@ -30,7 +31,7 @@ public class ChessGame{
     public boolean castleL2;
     public boolean castleR2;
 
-    public ChessGame() {
+    public ChessModel() {
         init();
     }
 

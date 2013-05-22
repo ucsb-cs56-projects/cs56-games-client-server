@@ -1,4 +1,7 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Network.ClientNetworkController;
+import edu.ucsb.cs56.games.client_server.Models.TicTacToeModel;
 
 /**
  * gictactoeservice allows clientconnect to communicate with tictactoe game
@@ -7,17 +10,17 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class TicTacToeService extends TwoPlayerGameService {
-    public TicTacToeGame gameData;
+public class TicTacToeController extends TwoPlayerGameController {
+    public TicTacToeModel gameData;
 
-    public ClientConnect player1;
-    public ClientConnect player2;
+    public ClientNetworkController player1;
+    public ClientNetworkController player2;
 
     public boolean gameStarted;
 
-    public TicTacToeService(int ID) {
+    public TicTacToeController(int ID) {
         super(ID);
-        gameData = new TicTacToeGame();
+        gameData = new TicTacToeModel();
         type = 1;
         name = "TicTacToe";
     }
@@ -27,7 +30,7 @@ public class TicTacToeService extends TwoPlayerGameService {
         broadcastData("INIT;");
     }
 
-    public void playClient(ClientConnect client) {
+    public void playClient(ClientNetworkController client) {
         if(player1 == null) {
             player1 = client;
             gameData.player1 = client.client;
@@ -35,7 +38,7 @@ public class TicTacToeService extends TwoPlayerGameService {
             player2 = client;
             gameData.player2 = client.client;
             gameStarted = true;
-            System.out.println("ready to play: "+player1.client.id+" vs "+player2.client.id);
+            System.out.println("ready to play: "+player1.client.getId()+" vs "+player2.client.getId());
             gameData.init();
         }
 
@@ -43,7 +46,7 @@ public class TicTacToeService extends TwoPlayerGameService {
     }
 
     //if a client was a player, spec him, and then probably stop the game
-    public void specClient(ClientConnect client) {
+    public void specClient(ClientNetworkController client) {
         if(player1 != client && player2 != client)
             return;
         if(player1 == client) {
@@ -65,7 +68,7 @@ public class TicTacToeService extends TwoPlayerGameService {
     }
 
     //get move from player, if it's their turn
-    public void handleData(ClientConnect client, String string) {
+    public void handleData(ClientNetworkController client, String string) {
         if(string.indexOf("PLAY;") == 0)
             playClient(client);
         else if(string.indexOf("SPEC;") == 0)
@@ -85,7 +88,7 @@ public class TicTacToeService extends TwoPlayerGameService {
 
         if(!gameStarted)
             return;
-        System.out.println(gameData.turn+", "+client.client.id+", "+player1.client.id+":"+player2.client.id);
+        System.out.println(gameData.turn+", "+client.client.getId()+", "+player1.client.getId()+":"+player2.client.getId());
         if(gameData.turn == 1 && client != player1)
             return;
         if(gameData.turn == 2 && client != player2)
@@ -93,7 +96,7 @@ public class TicTacToeService extends TwoPlayerGameService {
         if(string.indexOf("MOVE;") == 0) {
             if(gameData.winner != 0)
                 return;
-            System.out.println("got move command from "+client.client.id+": "+string);
+            System.out.println("got move command from "+client.client.getId()+": "+string);
             String[] data = string.substring(5).split(",");
             int X = Integer.parseInt(data[0]);
             int Y = Integer.parseInt(data[1]);
@@ -112,19 +115,19 @@ public class TicTacToeService extends TwoPlayerGameService {
     //this could be done better, just broadcast gameData.getGameState and have that function generate this:
     //wait but that isnt possible
     //sends the state of the game to a player
-    public void sendGameState(ClientConnect client) {
+    public void sendGameState(ClientNetworkController client) {
         if(client == null)
             return;
         synchronized (client) {
             client.sendMessage(gameData.getState());
             String players = "PLAYERS;";
             if(gameData.player1 != null)
-                players += gameData.player1.id;
+                players += gameData.player1.getId();
             else
                 players += "-1";
             players += ",";
             if(gameData.player2 != null)
-                players += gameData.player2.id;
+                players += gameData.player2.getId();
             else
                 players += "-1";
 

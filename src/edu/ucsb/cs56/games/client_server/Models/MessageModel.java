@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Models;
 
 /**
  * A message object for use in javaclient, rendering message history
@@ -8,7 +8,7 @@ package edu.ucsb.cs56.W12.jcolicchio.issue535;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class Message{
+public class MessageModel{
     String message;
     String author;
     boolean privateMessage;
@@ -28,7 +28,7 @@ public class Message{
      * @param PRIVATE if message is private
      * @param OUTGOING if message was private, is it outgoing or incoming
      */
-    public Message(String MSG, String AUTHOR, boolean PRIVATE, boolean OUTGOING) {
+    public MessageModel(String MSG, String AUTHOR, boolean PRIVATE, boolean OUTGOING) {
         message = MSG;
         author = AUTHOR;
         privateMessage = PRIVATE;

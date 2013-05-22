@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Models;
 
 import java.util.ArrayList;
 
@@ -11,27 +11,27 @@ import java.util.ArrayList;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class ClientObject{
-    int id;
-    String name;
-    int location;
+public class ClientModel{
+    private int id;
+    private String name;
+    private int location;
 
-    boolean isOp;
+    private boolean isOp;
 
     static ArrayList<Integer> colors;
     static boolean _init;
 
-    public ClientObject(int n) {
+    public ClientModel(int n) {
         //new client object made, stores data about client
-        id = n;
-        name = "User"+n;
-        location = 0;
+        setId(n);
+        setName("User"+n);
+        setLocation(0);
     }
     
-    public ClientObject(int n, String NAME, int LOCATION) {
-        id = n;
-        name = NAME;
-        location = LOCATION;
+    public ClientModel(int n, String NAME, int LOCATION) {
+        setId(n);
+        setName(NAME);
+        setLocation(LOCATION);
     }
 
     public static void init() {
@@ -49,6 +49,38 @@ public class ClientObject{
             init();
         }
 
-        return colors.get(id%colors.size());
+        return colors.get(getId()%colors.size());
     }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public boolean isOp() {
+		return isOp;
+	}
+
+	public void setOp(boolean isOp) {
+		this.isOp = isOp;
+	}
+
+	public int getLocation() {
+		return location;
+	}
+
+	public void setLocation(int location) {
+		this.location = location;
+	}
 }

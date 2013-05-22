@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Views;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,8 +14,8 @@ import java.awt.event.MouseListener;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class GamePanel extends JPanel implements MouseListener{
-    public GamePanel() {
+public class GameViewPanel extends JPanel implements MouseListener{
+    public GameViewPanel() {
         setLayout(new BorderLayout());
     }
 

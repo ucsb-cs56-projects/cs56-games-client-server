@@ -1,10 +1,14 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Controllers.Network;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+
+import edu.ucsb.cs56.games.client_server.JavaServer;
+import edu.ucsb.cs56.games.client_server.Controllers.Controller;
+import edu.ucsb.cs56.games.client_server.Models.ClientModel;
 
 /**
  * Clientconnect is a runnable object representing a connection between the server and a client
@@ -15,7 +19,7 @@ import java.net.Socket;
  */
 
 //server-wide convention for managing cilents connected to server
-public class ClientConnect implements Runnable {
+public class ClientNetworkController implements Runnable {
     Socket sock;
     BufferedReader reader;
     PrintWriter writer;
@@ -23,9 +27,9 @@ public class ClientConnect implements Runnable {
     boolean closed;
 
     //the client data object
-    public ClientObject client;
+    public ClientModel client;
 
-    public Service currentService;
+    public Controller currentService;
 
     //setup
 
@@ -33,7 +37,7 @@ public class ClientConnect implements Runnable {
      * set up the clientconnect with a socket
      * @param clientSocket active connection to server
      */
-    public ClientConnect(Socket clientSocket) {
+    public ClientNetworkController(Socket clientSocket) {
         if(clientSocket == null)
             return;
         if(JavaServer.isBanned(clientSocket.getRemoteSocketAddress().toString()))
@@ -56,20 +60,20 @@ public class ClientConnect implements Runnable {
         synchronized (JavaServer.clients) {
             for(int i=0;i<JavaServer.clients.size();i++) {
                 if(JavaServer.clients.get(i) == null) {
-                    client = new ClientObject(i);
+                    client = new ClientModel(i);
                     JavaServer.clients.set(i,this);
                     break;
                 }
             }
             if(client == null) {
-                client = new ClientObject(JavaServer.clients.size());
+                client = new ClientModel(JavaServer.clients.size());
                 JavaServer.clients.add(this);
                 JavaServer.updateServerGUI();
             }
         }
 
         //tell client what its id is
-        sendMessage("ID;"+client.id);
+        sendMessage("ID;"+client.getId());
         currentService = JavaServer.lobby;
         currentService.addClient(this);
         //edu.ucsb.cs56.W12.jcolicchio.issue535.JavaServer.broadcastMessage("CON;"+client.id);
@@ -87,7 +91,7 @@ public class ClientConnect implements Runnable {
         } catch(Exception ex) {
             System.out.println("closed? "+closed);
             ex.printStackTrace();
-            JavaServer.broadcastMessage("DCON["+client.id+"]Client crashed!");
+            JavaServer.broadcastMessage("DCON["+client.getId()+"]Client crashed!");
         }
 
         try{
@@ -103,9 +107,9 @@ public class ClientConnect implements Runnable {
         currentService.removeClient(this);
         System.out.println(closed+" well at least this got called...");
         synchronized (JavaServer.clients) {
-            JavaServer.clients.set(client.id, null);
-            if(client.id == JavaServer.clients.size()-1){
-                for(int i=client.id;i>=0;i--) {
+            JavaServer.clients.set(client.getId(), null);
+            if(client.getId() == JavaServer.clients.size()-1){
+                for(int i=client.getId();i>=0;i--) {
                     if(JavaServer.clients.get(i) == null) {
                         JavaServer.clients.remove(i);
                     } else {
@@ -128,7 +132,7 @@ public class ClientConnect implements Runnable {
         //do something with the message from the client
         if(string.indexOf("CON;") == 0) {
             //if incoming is CON;, alert everyone that cilent.id has connected
-            JavaServer.broadcastMessage("CON;"+client.id);
+            JavaServer.broadcastMessage("CON;"+client.getId());
         } else if(string.indexOf("DCON;") == 0) {
             //if incoming is DCON;, alert everyone that client.id has disconnected
             disconnect(string.substring(5));
@@ -154,13 +158,13 @@ public class ClientConnect implements Runnable {
         String r = "ALL;";
         synchronized (JavaServer.clients) {
         System.out.println("total users: "+JavaServer.clients.size());
-        ClientConnect client;
+        ClientNetworkController client;
             for(int i=0;i<JavaServer.clients.size();i++) {
                 client = JavaServer.clients.get(i);
                 if(client == null)
                     r += ",";
                 else
-                    r += client.client.name+","+client.client.location;
+                    r += client.client.getName()+","+client.client.getLocation();
                 if(i < JavaServer.clients.size()-1)
                     r += ";";
             }
@@ -203,11 +207,11 @@ public class ClientConnect implements Runnable {
             return;
         }
 
-        ClientConnect victim = JavaServer.clients.get(id);
+        ClientNetworkController victim = JavaServer.clients.get(id);
         if(reason == null || reason.equals(""))
-            victim.disconnect("Kicked by "+client.name);
+            victim.disconnect("Kicked by "+client.getName());
         else
-            victim.disconnect("Kicked by "+client.name+". Reason: "+reason);
+            victim.disconnect("Kicked by "+client.getName()+". Reason: "+reason);
     }
 
     /**
@@ -222,7 +226,7 @@ public class ClientConnect implements Runnable {
             fromServer("Could not find user: "+data[0]);
             return;
         }
-        ClientConnect victim = JavaServer.clients.get(id);
+        ClientNetworkController victim = JavaServer.clients.get(id);
         JavaServer.banIP(victim.sock.getRemoteSocketAddress().toString());
     }
 
@@ -238,7 +242,7 @@ public class ClientConnect implements Runnable {
             fromServer("Could not find user: "+data[0]);
             return;
         }
-        ClientConnect victim = JavaServer.clients.get(id);
+        ClientNetworkController victim = JavaServer.clients.get(id);
         JavaServer.unbanIP(victim.sock.getRemoteSocketAddress().toString());
     }
 
@@ -259,7 +263,7 @@ public class ClientConnect implements Runnable {
      */
     public void disconnect(String message) {
         closed = true;
-        String msg = "DCON["+client.id+"]";
+        String msg = "DCON["+client.getId()+"]";
         if(message != null)
             msg += message;
         JavaServer.broadcastMessage(msg);
@@ -274,7 +278,7 @@ public class ClientConnect implements Runnable {
     public void sendMessage(String string) {
         if(writer == null)
             return;
-        System.out.println("outgoing to "+client.id+"... "+string);
+        System.out.println("outgoing to "+client.getId()+"... "+string);
         writer.println(string);
         writer.flush();
     }
@@ -299,10 +303,10 @@ public class ClientConnect implements Runnable {
         }
 
         //this doesn't belong here
-        if(!client.name.equals(""))
-            JavaServer.broadcastMessage("SMSG;"+client.name+" changed name to "+newName);
-        client.name = newName;
-        JavaServer.broadcastMessage("NAME["+client.id+"]"+client.name);
+        if(!client.getName().equals(""))
+            JavaServer.broadcastMessage("SMSG;"+client.getName()+" changed name to "+newName);
+        client.setName(newName);
+        JavaServer.broadcastMessage("NAME["+client.getId()+"]"+client.getName());
     }
 
     /** send a message as the server
@@ -318,7 +322,7 @@ public class ClientConnect implements Runnable {
      * @param user username
      */
     public void op(String user) {
-        if(!client.isOp) {
+        if(!client.isOp()) {
             fromServer("You can't make "+user+" OP because you are not OP!");
             return;
         }

@@ -1,6 +1,9 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server.Views;
 
 import javax.swing.*;
+
+import edu.ucsb.cs56.games.client_server.JavaClient;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,8 +18,8 @@ import java.awt.event.MouseEvent;
  * @version for CS56, Choice Points, Winter 2012
  */
 
-public class LobbyPanel extends GamePanel {
-    public LobbyPanel() {
+public class LobbyViewPanel extends GameViewPanel {
+    public LobbyViewPanel() {
         setLayout(new FlowLayout());
         JoinGameButton ticTacToeButton = new JoinGameButton("TicTacToe");
         add(BorderLayout.NORTH, ticTacToeButton);

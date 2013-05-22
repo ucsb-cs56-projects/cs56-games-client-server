@@ -1,4 +1,4 @@
-package edu.ucsb.cs56.W12.jcolicchio.issue535;
+package edu.ucsb.cs56.games.client_server;
 
 import java.io.*;
 import java.net.*;
@@ -6,6 +6,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
+
+import edu.ucsb.cs56.games.client_server.Controllers.Controller;
+import edu.ucsb.cs56.games.client_server.Models.MessageModel;
+import edu.ucsb.cs56.games.client_server.Models.ClientModel;
+import edu.ucsb.cs56.games.client_server.Models.ResModel;
+import edu.ucsb.cs56.games.client_server.Models.UsernameModel;
+import edu.ucsb.cs56.games.client_server.Views.ChessViewPanel;
+import edu.ucsb.cs56.games.client_server.Views.GameViewPanel;
+import edu.ucsb.cs56.games.client_server.Views.GomokuViewPanel;
+import edu.ucsb.cs56.games.client_server.Views.LobbyViewPanel;
+import edu.ucsb.cs56.games.client_server.Views.OfflineViewPanel;
+import edu.ucsb.cs56.games.client_server.Views.TicTacToeViewPanel;
 
 /**
  * JavaClient is the main runnable client-side application, it allows users to connect to a server on a specific port
@@ -26,15 +38,15 @@ public class JavaClient implements KeyListener {
     BufferedReader reader;
     PrintWriter writer;
 
-    ArrayList<ClientObject> clients;
+    private ArrayList<ClientModel> clients;
     ArrayList<Integer> services;
     
-    ArrayList<Message> messages;
+    ArrayList<MessageModel> messages;
 
     JFrame frame;
     Container container;
-    GamePanel canvas;//the actual canvas currently being used by the gui
-    GamePanel canvasRef;//a reference to the current canvas being used by the game logic
+    GameViewPanel canvas;//the actual canvas currently being used by the gui
+    GameViewPanel canvasRef;//a reference to the current canvas being used by the game logic
     JTextField inputBox;
     JButton sendButton;
     JEditorPane outputBox;
@@ -42,7 +54,7 @@ public class JavaClient implements KeyListener {
     JList userList;
     DefaultListModel listModel;
 
-    int id;
+    private int id;
     String name;
     int location;
 
@@ -50,14 +62,14 @@ public class JavaClient implements KeyListener {
     
     InputReader thread;
     RefreshThread refreshThread;
-    boolean connected;
+    private boolean connected;
 
     public static void main(String [] args) {
         javaClient = new JavaClient();
     }
 
     public JavaClient() {
-        Res.init(this.getClass());
+        ResModel.init(this.getClass());
         frame = new JFrame("Java Games Online");
         frame.setSize(640, 512);
         frame.setMinimumSize(new Dimension(480,512));
@@ -65,7 +77,7 @@ public class JavaClient implements KeyListener {
             public void windowClosing(WindowEvent winEvt) {
                 if(thread != null)
                     thread.running = false;
-                if(connected)
+                if(isConnected())
                     sendMessage("DCON;Window Closed");
 
                 System.exit(0);
@@ -74,7 +86,7 @@ public class JavaClient implements KeyListener {
 
         
         container = frame.getContentPane();
-        canvas = new OfflinePanel(JavaServer.IP_ADDR,JavaServer.PORT);
+        canvas = new OfflineViewPanel(JavaServer.IP_ADDR,JavaServer.PORT);
         canvasRef = canvas;
         container.add(BorderLayout.CENTER,canvas);
 
@@ -105,9 +117,9 @@ public class JavaClient implements KeyListener {
                 if (e.getClickCount() == 2) {
                     int index = userList.locationToIndex(e.getPoint());
                     //follow player into game
-                    Username user = (Username)(listModel.getElementAt(index));
+                    UsernameModel user = (UsernameModel)(listModel.getElementAt(index));
                     if(user != null)
-                        sendMessage("MSG;/follow "+user.name);
+                        sendMessage("MSG;/follow "+user.getName());
                 }
             }
         };
@@ -162,9 +174,9 @@ public class JavaClient implements KeyListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Username user = (Username)userList.getSelectedValue();
+            UsernameModel user = (UsernameModel)userList.getSelectedValue();
             if(user != null)
-               sendMessage("MSG;/follow "+user.name);
+               sendMessage("MSG;/follow "+user.getName());
         }
     }
 
@@ -179,11 +191,11 @@ public class JavaClient implements KeyListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Username user = (Username)userList.getSelectedValue();
+            UsernameModel user = (UsernameModel)userList.getSelectedValue();
             if(user == null)
                 return;
 
-            inputBox.setText("/msg " + user.name + " ");
+            inputBox.setText("/msg " + user.getName() + " ");
             //give inputbox focus
             inputBox.requestFocus();
         }
@@ -191,9 +203,9 @@ public class JavaClient implements KeyListener {
 
 
     public void init() {
-        clients = new ArrayList<ClientObject>();
+        setClients(new ArrayList<ClientModel>());
         services = new ArrayList<Integer>();
-        messages = new ArrayList<Message>();
+        messages = new ArrayList<MessageModel>();
     }
 
     /** updateClients updates the client list with the names and locations of everyone on the server
@@ -203,21 +215,21 @@ public class JavaClient implements KeyListener {
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
-                    synchronized (clients) {
+                    synchronized (getClients()) {
                         listModel.clear();
                         if(location < 0)
                             return;
-                        listModel.addElement(new Username(name,null,2));
-                        for(int i=clients.size()-1;i>=0;i--) {
-                            ClientObject client = clients.get(i);
+                        listModel.addElement(new UsernameModel(name,null,2));
+                        for(int i=getClients().size()-1;i>=0;i--) {
+                            ClientModel client = getClients().get(i);
                             if(client != null) {
-                                if(client.id == id)
+                                if(client.getId() == getId())
                                     continue;
-                                if(client.location == location || services.size() <= client.location)
-                                    listModel.insertElementAt((new Username(client.name,null,0)),1);
+                                if(client.getLocation() == location || services.size() <= client.getLocation())
+                                    listModel.insertElementAt((new UsernameModel(client.getName(),null,0)),1);
                                 else {
 //                                    System.out.println(client.location+", "+serviceList.size()+", "+services.size());
-                                    listModel.addElement(new Username(client.name," ("+client.location+":"+Service.getGameType(services.get(client.location))+")",1));
+                                    listModel.addElement(new UsernameModel(client.getName()," ("+client.getLocation()+":"+Controller.getGameType(services.get(client.getLocation()))+")",1));
                                 }
                             }
                         }
@@ -253,13 +265,13 @@ public class JavaClient implements KeyListener {
      * @param port - the port number
      */
     public void connect(String ip, int port) {
-        if(connected)
+        if(isConnected())
             return;
         try {
             System.out.println("Connecting to "+ip+":"+port);
             sock = new Socket(ip,port);
             System.out.println("Connected");
-            connected = true;
+            setConnected(true);
             init();
             stream = new InputStreamReader(sock.getInputStream());
             reader = new BufferedReader(stream);
@@ -293,36 +305,36 @@ public class JavaClient implements KeyListener {
         if(string.indexOf("CON;") == 0) {
             int pid = Integer.parseInt(string.substring(4));
             System.out.println("Client "+pid+" has connected");
-            while(clients.size() <= pid)
-                clients.add(null);
-            if(clients.get(pid) == null)
-                clients.set(pid, new ClientObject(pid));
+            while(getClients().size() <= pid)
+                getClients().add(null);
+            if(getClients().get(pid) == null)
+                getClients().set(pid, new ClientModel(pid));
             else
                 sendMessage("INFO;");
-            messages.add(new Message(clients.get(pid).name+" connected", "Server",true,false));
+            messages.add(new MessageModel(getClients().get(pid).getName()+" connected", "Server",true,false));
             updateClients();
             updateMessages();
         } else if(string.indexOf("DCON[") == 0) {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             System.out.println("Client " + pid + " has disconnected: " + data[1]);
-            if(clients.size() > pid && clients.get(pid) != null) {
-                messages.add(new Message(clients.get(pid).name + " disconnected: "+data[1], "Server", true, false));
-                clients.set(pid, null);
+            if(getClients().size() > pid && getClients().get(pid) != null) {
+                messages.add(new MessageModel(getClients().get(pid).getName() + " disconnected: "+data[1], "Server", true, false));
+                getClients().set(pid, null);
             }
             updateClients();
             updateMessages();
-            if(pid == id)
+            if(pid == getId())
                 thread.running = false;
         } else if(string.indexOf("MSG[") == 0) {
             String[] data = string.substring(4).split("]");
             int pid = Integer.parseInt(data[0]);
-            if(clients.size() <= pid || clients.get(pid) == null)
+            if(getClients().size() <= pid || getClients().get(pid) == null)
                 return;
             String msg = string.substring(4+data[0].length()+1);
             System.out.println("Client "+pid+" said "+msg);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name,false,false));
+            if(getClients().size() > pid) {
+                messages.add(new MessageModel(msg,getClients().get(pid).getName(),false,false));
                 updateMessages();
             }
         } else if(string.indexOf("PMSG[") == 0) {
@@ -330,28 +342,28 @@ public class JavaClient implements KeyListener {
             int pid = Integer.parseInt(data[0]);
             String msg = string.substring(5+data[0].length()+1);
             System.out.println("Client "+pid+" privately said "+msg);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name, true, false));
+            if(getClients().size() > pid) {
+                messages.add(new MessageModel(msg,getClients().get(pid).getName(), true, false));
                 updateMessages();
             }
         } else if(string.indexOf("RMSG[") == 0) {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             String msg = string.substring(5+data[0].length()+1);
-            if(clients.size() > pid) {
-                messages.add(new Message(msg,clients.get(pid).name,true,true));
+            if(getClients().size() > pid) {
+                messages.add(new MessageModel(msg,getClients().get(pid).getName(),true,true));
                 updateMessages();
             }
         } else if(string.indexOf("SMSG;") == 0) {
             String msg = string.substring(5);
             if(msg != null && msg.length() > 0) {
-                messages.add(new Message(msg,"Server",true,false));
+                messages.add(new MessageModel(msg,"Server",true,false));
                 updateMessages();
             }
         } else if(string.indexOf("ID;") == 0) {
-            id = Integer.parseInt(string.substring(3));
+            setId(Integer.parseInt(string.substring(3)));
             if(name == null)
-                name = "User"+id;
+                name = "User"+getId();
 
             sendMessage("CON;");
             sendMessage("NAME;"+name);
@@ -361,16 +373,16 @@ public class JavaClient implements KeyListener {
             String[] connected = string.substring(4).split(";");
             for(int i=0;i<connected.length;i++) {
                 String[] info = connected[i].split(",");
-                if(clients.size() <= i)
-                    clients.add(null);
+                if(getClients().size() <= i)
+                    getClients().add(null);
                 if(connected[i].equals(","))
                     continue;
                 if(info[0].equals("")) {
-                    if(clients.get(i) != null)
-                        clients.set(i, null);
+                    if(getClients().get(i) != null)
+                        getClients().set(i, null);
                 } else {
-                    clients.set(i, new ClientObject(i, info[0], Integer.parseInt(info[1])));
-                    if(id == i)
+                    getClients().set(i, new ClientModel(i, info[0], Integer.parseInt(info[1])));
+                    if(getId() == i)
                         changeLocation(Integer.parseInt(info[1]));
                 }
             }
@@ -392,22 +404,22 @@ public class JavaClient implements KeyListener {
             String[] data = string.substring(5).split("]");
             int pid = Integer.parseInt(data[0]);
             String pname = data[1];
-            if(clients.size() <= pid)
+            if(getClients().size() <= pid)
                 return;
-            if(clients.get(pid) == null)
-                clients.set(pid, new ClientObject(id, pname, 0));
+            if(getClients().get(pid) == null)
+                getClients().set(pid, new ClientModel(getId(), pname, 0));
             //messages.add(new edu.ucsb.cs56.W12.jcolicchio.issue535.Message(clients.get(pid).name+" changed his name to "+pname, "Server",true,false,clients.get(0).getColor()));
-            clients.get(pid).name = pname;
-            if(pid == id)
+            getClients().get(pid).setName(pname);
+            if(pid == getId())
                 name = pname;
             updateClients();
             updateMessages();
         } else if(string.indexOf("MOVED[") == 0) {
             String[] data = string.substring(6).split("]");
             int pid = Integer.parseInt(data[0]);
-            clients.get(pid).location = Integer.parseInt(data[1]);
-            if(pid == id) {
-                changeLocation(clients.get(id).location);
+            getClients().get(pid).setLocation(Integer.parseInt(data[1]));
+            if(pid == getId()) {
+                changeLocation(getClients().get(getId()).getLocation());
             }
             updateClients();
             updateMessages();
@@ -424,24 +436,24 @@ public class JavaClient implements KeyListener {
             return;
         location = L;
         if(location == -1) {
-            canvasRef = new OfflinePanel(JavaServer.IP_ADDR,JavaServer.PORT);
+            canvasRef = new OfflineViewPanel(JavaServer.IP_ADDR,JavaServer.PORT);
         } else {
 
             int serviceType = services.get(location);
             if(serviceType == 0)
-                canvasRef = new LobbyPanel();
+                canvasRef = new LobbyViewPanel();
             else if(serviceType == 1)
-                canvasRef = new TicTacToePanel();
+                canvasRef = new TicTacToeViewPanel();
             else if(serviceType == 2)
-                canvasRef = new GomokuPanel();
+                canvasRef = new GomokuViewPanel();
             else if(serviceType == 3)
-                canvasRef = new ChessPanel();
+                canvasRef = new ChessViewPanel();
         }
 
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
-                    messages = new ArrayList<Message>();
+                    messages = new ArrayList<MessageModel>();
                     //updateMessages();
                     container.remove(canvas);
                     canvas = canvasRef;
@@ -476,7 +488,31 @@ public class JavaClient implements KeyListener {
         Keys[keyEvent.getKeyCode()] = false;
     }
 
-    /** listens for the send button's action and sends a message, if connected
+    public ArrayList<ClientModel> getClients() {
+		return clients;
+	}
+
+	public void setClients(ArrayList<ClientModel> clients) {
+		this.clients = clients;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+	/** listens for the send button's action and sends a message, if connected
      *
      */
     class SendListener implements ActionListener {
@@ -490,7 +526,7 @@ public class JavaClient implements KeyListener {
                 return;
 
             inputBox.setText("");
-            if(connected) {
+            if(isConnected()) {
                 sendMessage("MSG;"+message);
             }
         }
@@ -515,7 +551,7 @@ public class JavaClient implements KeyListener {
             } catch(Exception ex) {
                 ex.printStackTrace();
                 System.out.println("crashed for some other reason, disconnecting...");
-                writer.println("DCON;"+id);
+                writer.println("DCON;"+getId());
                 writer.flush();
             }
 
@@ -524,7 +560,7 @@ public class JavaClient implements KeyListener {
             }catch(IOException e){
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            connected = false;
+            setConnected(false);
             outputBox.setText("");
             updateClients();
             changeLocation(-1);
@@ -544,7 +580,7 @@ class MyCellRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        Username user = (Username)value;
+        UsernameModel user = (UsernameModel)value;
         if (user.style == 2) {// <= put your logic here
             c.setFont(c.getFont().deriveFont(Font.BOLD));
         } else if(user.style == 1) {
